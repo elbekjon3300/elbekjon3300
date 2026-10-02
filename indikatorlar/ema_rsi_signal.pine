@@ -1,0 +1,30 @@
+//@version=6
+// EMA kesishuvi + RSI filtri bilan BUY/SELL signal beruvchi indikator.
+// TradingView -> Pine Editor -> shu kodni qo'ying -> "Add to chart".
+indicator("EMA + RSI Signal", overlay = true)
+
+// --- Sozlamalar (chartda o'zgartirsa bo'ladi) ---
+fastLen = input.int(9,  "Tez EMA",  minval = 1)
+slowLen = input.int(21, "Sekin EMA", minval = 1)
+rsiLen  = input.int(14, "RSI davri", minval = 1)
+rsiBuy  = input.int(50, "RSI BUY chegarasi")
+rsiSell = input.int(50, "RSI SELL chegarasi")
+
+// --- Hisob-kitob ---
+fastEma = ta.ema(close, fastLen)
+slowEma = ta.ema(close, slowLen)
+rsi     = ta.rsi(close, rsiLen)
+
+buySignal  = ta.crossover(fastEma, slowEma)  and rsi > rsiBuy
+sellSignal = ta.crossunder(fastEma, slowEma) and rsi < rsiSell
+
+// --- Chizish ---
+plot(fastEma, "Tez EMA",  color = color.teal,   linewidth = 2)
+plot(slowEma, "Sekin EMA", color = color.orange, linewidth = 2)
+
+plotshape(buySignal,  "BUY",  shape.labelup,   location.belowbar, color.green, text = "BUY",  textcolor = color.white)
+plotshape(sellSignal, "SELL", shape.labeldown, location.abovebar, color.red,   text = "SELL", textcolor = color.white)
+
+// --- Ogohlantirish (Alert) ---
+alertcondition(buySignal,  "BUY signal",  "EMA+RSI: BUY {{ticker}} {{close}}")
+alertcondition(sellSignal, "SELL signal", "EMA+RSI: SELL {{ticker}} {{close}}")
